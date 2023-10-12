@@ -35,20 +35,20 @@ const client = new Client({
 
 // Event saat berhasil terautentikasi
 client.on('authenticated', (session) => {
-  console.log('\x1b[31m%s\x1b[0m', 'Client1 Session WhatsApp Sudah Terhubung.');
+  console.log('\x1b[31m%s\x1b[0m', 'Session WhatsApp Sudah Terhubung.');
 });
 
 // Event saat perlu melakukan scan kode QR
 client.on('qr', (qrCode) => {
-  console.log('Client1 Scan kode QR ini di WhatsApp Anda:');
+  console.log('Scan kode QR ini di WhatsApp Anda:');
   qrcode.generate(qrCode, { small: true });
 });
 
 // Event saat client siap digunakan
 client.on('ready', async () => {
-  console.log('\x1b[31m%s\x1b[0m', 'Client1 WhatsApp sudah terhubung.');
+  console.log('\x1b[31m%s\x1b[0m', 'WhatsApp sudah terhubung.');
   const tujuan = fixNumber(formatKarakter(format62(formatSpasi(nomoradmin))));
-  client.sendMessage(`${tujuan}@c.us`, 'Client1 WhatsApp sudah terhubung.');
+  client.sendMessage(`${tujuan}@c.us`, 'WhatsApp sudah terhubung.');
 });
 
 function formatNumber(number) {
