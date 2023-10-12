@@ -3,10 +3,10 @@ const qrcode = require('qrcode-terminal');
 const express = require('express');
 require('dotenv').config();
 const app = express();
-const port = 180;
 
 let nomoradmin = process.env.Nomor_ADMIN || '';
 let secret = process.env.SECRET_APP || '';
+let port = process.env.PORT || '180';
 
 // Middleware untuk mem-parsa body dari request sebagai JSON
 app.use(express.json());
