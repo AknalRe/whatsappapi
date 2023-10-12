@@ -79,10 +79,6 @@ function fixNumber(nomor){
     return nomor;
 };
 
-app.get('/', (req, res) => {
-    res.send('Halo')
-})
-
 // Endpoint untuk mengirim pesan WhatsApp
 app.post('/message', async (req, res) => {
   try {
