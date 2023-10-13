@@ -8,7 +8,7 @@ const app = express();
 
 let nomoradmin = process.env.Nomor_ADMIN || '';
 let secret = process.env.SECRET_APP || '';
-let port = process.env.PORT || '180';
+let port = parseInt(process.env.PORT || 180);
 
 // Middleware untuk mem-parsa body dari request sebagai JSON
 app.use(express.json());
@@ -125,7 +125,14 @@ function startServer(port) {
     if (error.code === 'EADDRINUSE') {
       // Port sudah digunakan, coba port yang berbeda secara acak
       console.log('\x1b[31m%s\x1b[0m', `Port ${port} sudah digunakan. Mencoba port lain...`);
-      startServer(port + 1); // Mencoba port berikutnya
+      // Fungsi untuk mendapatkan angka acak antara 1024 dan 65535 (rentang port yang valid)
+      function getRandomPort() {
+        return Math.floor(Math.random() * (65535 - 1024 + 1)) + 1024;
+      }
+
+      // Menggunakan angka acak untuk menambahkan port
+      let randomPort = getRandomPort();
+      startServer(port + randomPort); // Mencoba port berikutnya
     } else {
       console.error('Kesalahan lain:', error);
     }
