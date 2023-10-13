@@ -1,6 +1,8 @@
 const { Client, LocalAuth, Buttons, List, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const bodyParser = require('body-parser'); 
 const express = require('express');
+const http = require('http');
 require('dotenv').config();
 const app = express();
 
@@ -10,6 +12,8 @@ let port = process.env.PORT || '180';
 
 // Middleware untuk mem-parsa body dari request sebagai JSON
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Membuat instance dari client WhatsApp
 const client = new Client({
@@ -47,47 +51,58 @@ client.on('qr', (qrCode) => {
 // Event saat client siap digunakan
 client.on('ready', async () => {
   console.log('\x1b[31m%s\x1b[0m', 'WhatsApp sudah terhubung.');
-  const tujuan = fixNumber(formatKarakter(format62(formatSpasi(nomoradmin))));
+  const tujuan = formatPhoneNumber(nomoradmin);
   client.sendMessage(`${tujuan}@c.us`, 'WhatsApp sudah terhubung.');
 });
 
-function formatNumber(number) {
-  return number.replace(/@c.us/g, '');
-}
-
-function formatSpasi(number) {
-  return number.replace(/\s+/g, ''); // Menghapus semua spasi dari nomor
-}
-
-// Fungsi untuk mengubah '62' di awal menjadi '0'
-function format62(number) {
+// Fungsi untuk memformat nomor telepon
+function formatPhoneNumber(number) {
+  number = number.replace(/@c.us/g, '');
+  number = number.replace(/\s+/g, ''); // Menghapus semua spasi
+  // Memeriksa apakah awalan adalah '0' atau '62', jika bukan, ubah menjadi '62'
+  if (!number.startsWith('0') && !number.startsWith('62')) {
+    number = '62' + number;
+  }
   if (number.startsWith('62')) {
-    return '0' + number.substr(2);
+    number = '0' + number.substr(2);
+  }
+  number = number.replace(/[\s-+]+/g, ''); // Menghapus spasi, '-', dan '+'
+  if (number.startsWith('0')) {
+    number = '62' + number.substr(1);
   }
   return number;
 }
 
-// Fungsi untuk menghapus spasi, karakter '-', dan '+'
-function formatKarakter(number) {
-  return number.replace(/[\s-+]+/g, '');
-}
+app.get('/message', async (req,res) => {
+  try {
+    const { secretApp, phoneNumber, message } = req.query;
+    if (secretApp === secret) {
+      const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+      await client.sendMessage(`${formattedPhoneNumber}@c.us`, message);
 
-function fixNumber(nomor){
-    if (nomor.startsWith('0')) {
-      return '62' + nomor.substr(1);
+      res.status(200).json({ success: true, message: 'Pesan terkirim.' });
+    } else {
+      res.status(500).json({ success: false, message: 'secretApp tidak cocok' });
     }
-    return nomor;
-};
+  } catch {
+    console.error('Error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+})
 
 // Endpoint untuk mengirim pesan WhatsApp
 app.post('/message', async (req, res) => {
   try {
     const { secretApp, phoneNumber, message } = req.body;
     if (secretApp === secret){
-        console.log(`Phone Number : ${phoneNumber}`)
-        console.log(`Message : ${message}`)
+        // console.log(`Phone Number : ${phoneNumber}`)
+        // console.log(`Message : ${message.replace(/(\n|\t|\r)/g, (match) => {
+        //   if (match === '\n') return '\\n';
+        //   if (match === '\t') return '\\t';
+        //   if (match === '\r') return '\\r';
+        // })}`)
         // Format nomor telepon jika diperlukan
-        const formattedPhoneNumber = fixNumber(formatKarakter(format62(formatSpasi(phoneNumber))));
+        const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
         // Kirim pesan WhatsApp
         await client.sendMessage(`${formattedPhoneNumber}@c.us`, message);
@@ -102,9 +117,28 @@ app.post('/message', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server berjalan di port ${port}`);
-});
+// Definisikan fungsi untuk mencoba port yang berbeda jika port sudah digunakan
+function startServer(port) {
+  const server = http.createServer(app);
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      // Port sudah digunakan, coba port yang berbeda secara acak
+      console.log('\x1b[31m%s\x1b[0m', `Port ${port} sudah digunakan. Mencoba port lain...`);
+      startServer(port + 1); // Mencoba port berikutnya
+    } else {
+      console.error('Kesalahan lain:', error);
+    }
+  });
+
+  server.on('listening', () => {
+    console.log(`Server berjalan di port ${server.address().port}`);
+  });
+
+  server.listen(port);
+}
+
+startServer(port);
 
 // Inisialisasi client WhatsApp
 client.initialize();
