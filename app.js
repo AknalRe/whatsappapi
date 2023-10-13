@@ -48,13 +48,6 @@ client.on('qr', (qrCode) => {
   qrcode.generate(qrCode, { small: true });
 });
 
-// Event saat client siap digunakan
-client.on('ready', async () => {
-  console.log('\x1b[31m%s\x1b[0m', 'WhatsApp sudah terhubung.');
-  const tujuan = formatPhoneNumber(nomoradmin);
-  client.sendMessage(`${tujuan}@c.us`, 'WhatsApp sudah terhubung.');
-});
-
 // Fungsi untuk memformat nomor telepon
 function formatPhoneNumber(number) {
   number = number.replace(/@c.us/g, '');
@@ -73,6 +66,14 @@ function formatPhoneNumber(number) {
   return number;
 }
 
+// Event saat client siap digunakan
+client.on('ready', async () => {
+  console.log('\x1b[31m%s\x1b[0m', 'WhatsApp sudah terhubung.');
+  const tujuan = formatPhoneNumber(nomoradmin);
+  client.sendMessage(`${tujuan}@c.us`, 'WhatsApp sudah terhubung.');
+});
+
+// Endpoint GET untuk mengirim pesan WhatsApp
 app.get('/message', async (req,res) => {
   try {
     const { secretApp, phoneNumber, message } = req.query;
@@ -90,7 +91,7 @@ app.get('/message', async (req,res) => {
   }
 })
 
-// Endpoint untuk mengirim pesan WhatsApp
+// Endpoint POST untuk mengirim pesan WhatsApp
 app.post('/message', async (req, res) => {
   try {
     const { secretApp, phoneNumber, message } = req.body;
@@ -145,7 +146,7 @@ function startServer(port) {
   server.listen(port);
 }
 
+// Inisialisasi Server
 startServer(port);
-
 // Inisialisasi client WhatsApp
 client.initialize();
