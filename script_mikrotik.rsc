@@ -9,14 +9,14 @@ add dont-require-permissions=yes name=wa_secret owner=Renaldi policy=\
     \n:global header \"*-----Pesan Otomatis-----*\";\r\
     \n:global footer \"*-----Pesan Otomatis-----*\"\r\
     \n\r\
-    \n:global nomoradmin \"6285155431301\";\r\
-    \n:global secret \"Contoh123\";\r\
-    \n:global interfacewan \"ether1\";\r\
-    \n:global nameisp \"INDIHOME\";\r\
-    \n:global tnggaltagihan \"5\";\r\
+    \n:global nomoradmin \"Ganti Dengan Nomor Anda\";\r\
+    \n:global secret \"Ganti Dengan Secret Anda\";\r\
+    \n:global interfacewan \"Ganti Dengan Input Internet Anda\";\r\
+    \n:global nameisp \"Ganti Dengan Nama ISP Anda\";\r\
+    \n:global tnggaltagihan \"Ganti Dengan Tanggal Tagihan yang anda inginkan\";\r\
     \n:global count 0;\r\
     \n\r\
-    \n:global namaadmin \"Renaldi\";\r\
+    \n:global namaadmin \"Ganti Nama Anda\";\r\
     \n:global infoadmin \"*\$namaadmin*\\\\nhttps://wa.me/\$nomoradmin\";\r\
     \n\r\
     \n:local url \"http://vpn.aknalre.my.id\";\r\
