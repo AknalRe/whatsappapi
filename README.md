@@ -86,3 +86,21 @@
         
         [Renaldi@LenovoG40-80] >
         ```
+        
+
+### Update
+1. 17-10-2023
+    - Penambahan Endpoint GET /message dan /logpesan/adminnumber/secret
+        - Mengakses Endpoint GET /message :
+            ```bash
+            http://localhost:180/message?secretApp=isi_secret&phoneNumber=isi_nomor_tujuan&message=isi_pesan
+            ```
+        - Mengakses Endpoint GET /logpesan :
+            ```bash
+            http://localhost:180/logpesan/isi_dengan_nomoradmin/isi_dengan_secret/
+            ```
+    - Penambahan script_mikroitk 
+        - Menerima pesan dan memproses pesan (Interaksi Whatsapp dengan Mikrotik)
+        - Cek status, interface, ppp, dhcp, hotspot user dengan pesan whatsapp
+        - Memproses dan mengirimkan tagihan atau iuran ke pelanggan pppoe secara otomatis ataupun manual dengan perintah melalui whatsapp
+    
