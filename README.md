@@ -95,6 +95,8 @@
             ```bash
             http://localhost:180/message?secretApp=isi_secret&phoneNumber=isi_nomor_tujuan&message=isi_pesan
             ```
+            Dapat dikombinasikan dengan phpnuxbill
+          
         - Mengakses Endpoint GET /logpesan :
             ```bash
             http://localhost:180/logpesan/isi_dengan_nomoradmin/isi_dengan_secret/
