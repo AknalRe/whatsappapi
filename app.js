@@ -1,4 +1,4 @@
-const { Client, LocalAuth, Buttons, List, MessageMedia } = require('whatsapp-web.js');
+const { Client, LocalAuth, Buttons, List, MessageMedia, MessageTypes } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const bodyParser = require('body-parser'); 
 const express = require('express');
@@ -9,6 +9,9 @@ const app = express();
 let nomoradmin = process.env.Nomor_ADMIN || '';
 let secret = process.env.SECRET_APP || '';
 let port = parseInt(process.env.PORT || 180);
+let isadmin;
+let nameisadmin;
+let pesanadmin = '';
 
 // Middleware untuk mem-parsa body dari request sebagai JSON
 app.use(express.json());
@@ -66,12 +69,59 @@ function formatPhoneNumber(number) {
   return number;
 }
 
+function formatmessagefrom(number) {
+  // Gunakan metode .replace() dengan ekspresi reguler untuk menghapus @c.us
+  return number.replace(/@c\.us$/, '');
+}
+
+// Fungsi untuk menghapus pesanadmin
+function clearPesanAdmin() {
+  pesanadmin = ''; // Mengosongkan pesanadmin
+  console.log('Pesan Admin telah dihapus.');
+}
+
+function gantiTanda(message) {
+  message = message.replace(/{silang}/g, '❌');
+  message = message.replace(/{centang}/g, '✅');
+  return message;
+}
+
+// setInterval(clearPesanAdmin, 15000);
+
 // Event saat client siap digunakan
 client.on('ready', async () => {
   console.log('\x1b[31m%s\x1b[0m', 'WhatsApp sudah terhubung.');
   const tujuan = formatPhoneNumber(nomoradmin);
   client.sendMessage(`${tujuan}@c.us`, 'WhatsApp sudah terhubung.');
 });
+
+client.on('message', async message => {
+  console.log(message);
+  // isadmin = (message.from || message_data.from).replace(/@c\.us$/, '');
+  isadmin = formatmessagefrom(message.from || message._data.from);
+  console.log(isadmin)
+  if (isadmin === formatPhoneNumber(nomoradmin) && message.from.length < 19) {
+    nameisadmin = message._data.notifyName || message.author;
+    pesanadmin = message.body || message._data.body;
+    console.log(nameisadmin);
+    console.log(pesanadmin);
+  } else {
+    console.log(`Pesan Bukan Dari Nomor Admin`);
+  }
+})
+
+app.get(`/logpesan/${formatPhoneNumber(nomoradmin)}/:secretApp`, async (req, res) => {
+  try {
+    const secretApp = req.params.secretApp;
+    if (secretApp === secret) {
+      res.send(`${pesanadmin}`);
+    } else {
+      res.send(`secret kode tidak sama`);
+    }
+  } catch {
+    res.send('ERROR')
+  }
+})
 
 // Endpoint GET untuk mengirim pesan WhatsApp
 app.get('/message', async (req,res) => {
@@ -91,22 +141,30 @@ app.get('/message', async (req,res) => {
   }
 })
 
+app.post('/hapuspesan/:secretApp', async (req, res) => {
+  const secretApp = req.params.secretApp;
+  if (secretApp === secret) {
+    clearPesanAdmin()
+    res.status(200).json({ success: true, message: 'Pesan Admin Berhasil Di Hapus' })
+  }
+})
+
 // Endpoint POST untuk mengirim pesan WhatsApp
 app.post('/message', async (req, res) => {
   try {
     const { secretApp, phoneNumber, message } = req.body;
     if (secretApp === secret){
-        // console.log(`Phone Number : ${phoneNumber}`)
-        // console.log(`Message : ${message.replace(/(\n|\t|\r)/g, (match) => {
-        //   if (match === '\n') return '\\n';
-        //   if (match === '\t') return '\\t';
-        //   if (match === '\r') return '\\r';
-        // })}`)
+        console.log(`Phone Number : ${phoneNumber}`)
+        console.log(`Message : ${message.replace(/(\n|\t|\r)/g, (match) => {
+          if (match === '\n') return '\\n';
+          if (match === '\t') return '\\t';
+          if (match === '\r') return '\\r';
+        })}`)
         // Format nomor telepon jika diperlukan
         const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
         // Kirim pesan WhatsApp
-        await client.sendMessage(`${formattedPhoneNumber}@c.us`, message);
+        await client.sendMessage(`${formattedPhoneNumber}@c.us`, gantiTanda(message));
 
         res.status(200).json({ success: true, message: 'Pesan terkirim.' });
     } else {
