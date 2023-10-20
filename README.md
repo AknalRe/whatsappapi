@@ -90,19 +90,31 @@
 
 ### Update
 1. 17-10-2023
-    - Penambahan Endpoint GET /message dan /logpesan/adminnumber/secret
-        - Mengakses Endpoint GET /message :
-            ```bash
-            http://localhost:180/message?secretApp=isi_secret&phoneNumber=isi_nomor_tujuan&message=isi_pesan
-            ```
-            Dapat dikombinasikan dengan phpnuxbill
-          
-        - Mengakses Endpoint GET /logpesan :
-            ```bash
-            http://localhost:180/logpesan/isi_dengan_nomoradmin/isi_dengan_secret/
-            ```
-    - Penambahan script_mikroitk 
+    - Penambahan Nodejs
+        - Penambahan Endpoint GET /message dan /logpesan/adminnumber/secret
+            - Mengakses Endpoint GET /message :
+                ```bash
+                http://localhost:180/message?secretApp=isi_secret&phoneNumber=isi_nomor_tujuan&message=isi_pesan
+                ```
+                Dapat dikombinasikan dengan phpnuxbill
+            - Mengakses Endpoint GET /logpesan :
+                ```bash
+                http://localhost:180/logpesan/isi_dengan_nomoradmin/isi_dengan_secret/
+                ```
+    - Penambahan Mikrotik Script
         - Menerima pesan dan memproses pesan (Interaksi Whatsapp dengan Mikrotik)
         - Cek status, interface, ppp, dhcp, hotspot user dengan pesan whatsapp
         - Memproses dan mengirimkan tagihan atau iuran ke pelanggan pppoe secara otomatis ataupun manual dengan perintah melalui whatsapp
     
+2. 20-10-2023
+    - Penambahan Nodejs
+        - Penambahan Endpoint GET
+            - /error :
+            ```bash
+            http://localhost:180/error
+            ```
+            Di buat untuk di download di jadikan webproxy isolir.html pada mikrotik
+    - Penambahan Mikrotik Script
+        - Script Profile Hotspot
+            - Notifikasi/Hapus otomatis user hotspot yang terkoneksi
+        - Manual Blokir/Isolir User Mikrotik
