@@ -5,6 +5,8 @@ const express = require('express');
 const http = require('http');
 require('dotenv').config();
 const app = express();
+const path = require('path');
+
 
 let nomoradmin = process.env.Nomor_ADMIN || '';
 let secret = process.env.SECRET_APP || '';
@@ -12,11 +14,12 @@ let port = parseInt(process.env.PORT || 180);
 let isadmin;
 let nameisadmin;
 let pesanadmin = '';
-
+ 
 // Middleware untuk mem-parsa body dari request sebagai JSON
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Membuat instance dari client WhatsApp
 const client = new Client({
@@ -122,6 +125,52 @@ app.get(`/logpesan/${formatPhoneNumber(nomoradmin)}/:secretApp`, async (req, res
     res.send('ERROR')
   }
 })
+
+app.get('/image', (req, res) => {
+  const folderPath = path.join(__dirname, 'public/image'); // Ganti dengan path folder Anda
+  res.sendFile(folderPath);
+});
+
+app.get('/image/:imageName', (req, res) => {
+  const imageName = req.params.imageName;
+  const imagePath = path.join(__dirname, 'public/image', imageName); // Ganti dengan path folder dan gambar Anda
+  res.sendFile(imagePath);
+});
+
+app.get('/error', (req, res) => {
+  const html = `
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style>
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+}
+</style>
+
+</head>
+
+<img src="http://vpn.aknalre.my.id:120/image/expired.png" alt="isolir belum bayar tagihan" class="center" width=450px height=310px>
+<br>
+<div class="center">
+<center>
+<h2>Internet Dinonaktifkan Sementara</h2>
+          <p>
+              Pelanggan yang terhormat,<br><br>
+              Kami informasikan bahwa layanan internet Anda saat ini <b>terisolir (dimatikan sementara)</b>.<br><br>
+              Dimohon untuk <b>melakukan pembayaran tagihan</b>, supaya internet <b>kembali normal</b>.<br><br>
+              Guna menghindari ketidaknyamanan ini,<br>
+              dimohon untuk melakukan pembayaran sebelum tanggal jatuh tempo.<br><br>
+              Terimakasih
+          </p></center>
+</div>
+</body></html>
+`;
+
+  res.send(html); // Mengirimkan HTML sebagai respons
+});
 
 // Endpoint GET untuk mengirim pesan WhatsApp
 app.get('/message', async (req,res) => {
