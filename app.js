@@ -99,15 +99,15 @@ client.on('ready', async () => {
 });
 
 client.on('message', async message => {
-  console.log(message);
+//   console.log(message);
   // isadmin = (message.from || message_data.from).replace(/@c\.us$/, '');
   isadmin = formatmessagefrom(message.from || message._data.from);
   console.log(isadmin)
   if (isadmin === formatPhoneNumber(nomoradmin) && message.from.length < 19) {
     nameisadmin = message._data.notifyName || message.author;
     pesanadmin = message.body || message._data.body;
-    console.log(nameisadmin);
-    console.log(pesanadmin);
+    console.log("Nama WA ADMIN : ${nameisadmin}");
+    console.log("Isi Pesan : ${pesanadmin}");
   } else {
     console.log(`Pesan Bukan Dari Nomor Admin`);
   }
