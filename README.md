@@ -23,7 +23,9 @@
     ```
     Terkhusus Linux :
     - Jika terdapat kegagalan instalasi di linux, buka dokumentasi ini https://wwebjs.dev/guide/#installation
-    - Jika masih berlanjut kesalahan tersebut coba untuk menginstall chromium atau google-chrome
+    - Jika masih berlanjut kesalahan tersebut coba untuk menginstall chromium atau google-chrome :
+        - apt-get install chromium-browser
+        - apt-get install google-chrome-stable
     - Beberapa pemecahan masalah dengan bersumber pada stackoverflow berikut
     https://stackoverflow.com/questions/72995651/error-failed-to-launch-the-browser-process-whatsapp-web-js-azure-portal-linu
 7. Setelah installasi module yang dibutuhkan berhasil tanpa kendala, jalankan berikut:
