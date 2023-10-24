@@ -102,7 +102,7 @@ client.on('message', async message => {
 //   console.log(message);
   // isadmin = (message.from || message_data.from).replace(/@c\.us$/, '');
   isadmin = formatmessagefrom(message.from || message._data.from);
-  console.log(`Nomor Admin : ${isadmin}`)
+  console.log(`Nomor WA ADMIN : ${isadmin}`)
   if (isadmin === formatPhoneNumber(nomoradmin) && message.from.length < 19) {
     nameisadmin = message._data.notifyName || message.author;
     pesanadmin = message.body || message._data.body;
