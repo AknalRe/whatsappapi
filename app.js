@@ -102,14 +102,19 @@ client.on('message', async message => {
 //   console.log(message);
   // isadmin = (message.from || message_data.from).replace(/@c\.us$/, '');
   isadmin = formatmessagefrom(message.from || message._data.from);
-  console.log(`Nomor WA ADMIN : ${isadmin}`)
   if (isadmin === formatPhoneNumber(nomoradmin) && message.from.length < 19) {
+    console.log('\x1b[31m%s\x1b[0m', `Pesan Dari Nomor Admin`);
+    console.log(`Nomor WA ADMIN : ${isadmin}`)
     nameisadmin = message._data.notifyName || message.author;
     pesanadmin = message.body || message._data.body;
     console.log(`Nama WA ADMIN : ${nameisadmin}`);
     console.log(`Isi Pesan : ${pesanadmin}`);
   } else {
-    console.log(`Pesan Bukan Dari Nomor Admin`);
+    console.log('\x1b[31m%s\x1b[0m', `Pesan Bukan Dari Nomor Admin`);
+    const nomor = formatmessagefrom(message.from || message._data.from);
+    const nama = message._data.notifyName || message.author;
+    const pesan = message.body || message._data.body;
+    console.log(`Nomor : ${nomor} | Nama : ${nama} | Pesan :\n${pesan}`);
   }
 })
 
