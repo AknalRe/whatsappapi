@@ -1,4 +1,4 @@
-/system script
+
 add dont-require-permissions=yes name=wa_secret owner=Renaldi policy=\
     read,write,policy,test,sensitive source="# SCRIPT BOT WHATSAPP AknalRE\r\
     \n\r\
@@ -9,23 +9,34 @@ add dont-require-permissions=yes name=wa_secret owner=Renaldi policy=\
     \n:global secret \"Contoh123\";\r\
     \n:global interfacewan \"ether1\";\r\
     \n:global nameisp \"INDIHOME\";\r\
-    \n:global tnggaltagihan \"5\";\r\
-    \n:global tnggalpengingat \"1\";\r\
+    \n:global tnggaltagihan \"05\";\r\
+    \n:global tnggalpengingat \"01\";\r\
+    \n:global tnggalisolir \"06\";\r\
     \n:global count 0;\r\
     \n:global delaypesan \"10\";\r\
     \n:global outinttoclient \"LAN\";\r\
+    \n:global domainisolir \"aknalre.isolirinet.my.id\";\r\
+    \n:global domainisolirhttp \"https://aknalre.isolirinet.my.id\";\r\
+    \n:global pengecualianhost \"aknalre.isolirinet.my.id\";\r\
     \n\r\
     \n:global namaadmin \"Renaldi\";\r\
     \n:global infoadmin \"*\$namaadmin*\\\\nhttps://wa.me/\$nomoradmin\";\r\
     \n\r\
-    \n:local url \"http://vpn.aknalre.my.id\";\r\
-    \n:local port \":120\";\r\
+    \n# :local url \"http://vpn.aknalre.my.id\";\r\
+    \n# :local port \":120\";\r\
+    \n\r\
+    \n:local url \"https://aknalre.isolirinet.my.id/wa/\";\r\
     \n\r\
     \n:if ([:len \$port] = 0) do={\r\
     \n  :global urlapi (\$url);\r\
     \n} else={\r\
     \n  :global urlapi (\$url . \$port);\r\
-    \n}"
+    \n}\r\
+    \n\r\
+    \n:local commentcontoh \"nomor_pelanggan|nama_pelanggan|total_tagihan|deta\
+    il_paket_kecepatan|status_tagihan_(SELESAI/LUNAS/BELUM)\";\r\
+    \n:ppp secret add name=contohpppoe password=pppoe profile=default service=\
+    any comment=\$commentcontoh"
 add dont-require-permissions=yes name=wa_getupdate owner=Renaldi policy=\
     read,write,policy,test,sensitive source="# SCRIPT BOT WHATSAPP AknalRE\r\
     \n\r\
@@ -38,6 +49,7 @@ add dont-require-permissions=yes name=wa_getupdate owner=Renaldi policy=\
     \n\r\
     \n:global pesanenabledisable;\r\
     \n:global pesanblokir;\r\
+    \n:global pesanupdatetagihan;\r\
     \n:global pesanbroadcast;\r\
     \n:global pesanisolir;\r\
     \n:global stringwaktu;\r\
@@ -77,6 +89,10 @@ add dont-require-permissions=yes name=wa_getupdate owner=Renaldi policy=\
     tatus\";\r\
     \n      :set menuCount (\$menuCount + 1);\r\
     \n\r\
+    \n      :set (\$menuList->\"menu\$menuCount\") \"*Update Status Tagihan* |\
+    \_.update_tagihan|nama pppoe|status baru\";\r\
+    \n      :set menuCount (\$menuCount + 1);\r\
+    \n\r\
     \n      :set (\$menuList->\"menu\$menuCount\") \"*Kirim Tagihan PPPoE Manu\
     al* | .kirim_tagihan\";\r\
     \n      :set menuCount (\$menuCount + 1);\r\
@@ -93,7 +109,7 @@ add dont-require-permissions=yes name=wa_getupdate owner=Renaldi policy=\
     LESAI* :\\\\n\\\\t\\\\t\\\\t.broadcast|SELESAI|isi_tanggal|isi_waktu\\\\n\
     \\\\t\\\\t- *TEKS*:\\\\n\\\\t\\\\t\\\\t.broadcast|TEKS|isi_pesan yang ingi\
     n di broadcast\\\\n\\\\n\\\\t\\\\t\\\\tCatatan : broadcast *TEKS* usahakan\
-    \_teks bersifat general atau umum\";\r\
+    \_teks bersifat general atau umum\\\\n\";\r\
     \n      :set menuCount (\$menuCount + 1);\r\
     \n\r\
     \n      :set (\$menuList->\"menu\$menuCount\") \"*List Secret PPP* | .ac_p\
@@ -119,7 +135,7 @@ add dont-require-permissions=yes name=wa_getupdate owner=Renaldi policy=\
     \n      :set (\$menuList->\"menu\$menuCount\") \"*Enable / Disable* | \\\\\
     n\\\\tService = interface / ppp / userhotspot \\\\n\\\\t\\\\t- *Enable*\\\
     \\n\\\\t\\\\t.enable|service|nama\\\\n\\\\t\\\\t- *Disable*\\\\n\\\\t\\\\t\
-    .disable|service|nama\";\r\
+    .disable|service|nama\\\\n\";\r\
     \n      :set menuCount (\$menuCount + 1);\r\
     \n\r\
     \n      :set (\$menuList->\"menu\$menuCount\") \"*Blokir Inet User* | .blo\
@@ -143,6 +159,15 @@ add dont-require-permissions=yes name=wa_getupdate owner=Renaldi policy=\
     \n      /system script run wa_fetch_pesan\r\
     \n      /system script run wa_status\r\
     \n    }\r\
+    \n    if (\$pesan~\"^.update_tagihan\") do={\r\
+    \n      /system script run wa_deleteinbox\r\
+    \n      :set pesanupdatetagihan \$pesan;\r\
+    \n      :set pesan [:pick \$pesan 0 [:find \$pesan \"|\"]];\r\
+    \n      :set pesanoutbox \"Pesan\\\\t: *\$pesan*\\\\n\\\\nTelah Di Terima\
+    \";\r\
+    \n      /system script run wa_fetch_pesan\r\
+    \n      /system script run wa_update_tagihan\r\
+    \n    }      \r\
     \n    if (\$pesan = \".kirim_tagihan\") do={\r\
     \n      /system script run wa_deleteinbox\r\
     \n      :set pesanoutbox (\"Pesan\\\\t: *\$pesan*\\\\n\\\\nTelah Di Terima\
@@ -573,14 +598,14 @@ add dont-require-permissions=yes name=wa_template_tagihan_pppoe owner=Renaldi \
     \n:global footer;\r\
     \n:global infoadmin;\r\
     \n:global delaypesan;\r\
-    \n\r\
     \n:global nomoruser;\r\
     \n:global pesanoutboxuser;\r\
     \n:global pesanoutbox;\r\
     \n:global tnggaltagihan;\r\
+    \n\r\
     \n:local tanggal \$tnggaltagihan;\r\
     \n\r\
-    \n:foreach pppSecretId in=[/ppp secret find profile=\"PPPoE\"] do={\r\
+    \n:foreach pppSecretId in=[/ppp secret find service=\"pppoe\"] do={\r\
     \n  :local comment [/ppp secret get \$pppSecretId comment];\r\
     \n  :if ([:len \$comment] > 0) do={\r\
     \n    :local delimiter ([:find \$comment \"|\"]);\r\
@@ -593,8 +618,12 @@ add dont-require-permissions=yes name=wa_template_tagihan_pppoe owner=Renaldi \
     \_[:len \$remaining]];\r\
     \n    :local tagihan ([:pick \$remaining2 0 ([:find \$remaining2 \"|\"])])\
     ;\r\
-    \n    :local paket ([:pick \$remaining2 ([:find \$remaining2 \"|\"] + 1) [\
-    :len \$remaining2]]);\r\
+    \n    :local remaining3 ([:pick \$remaining2 ([:find \$remaining2 \"|\"] +\
+    \_1) [:len \$remaining2]]);\r\
+    \n    :local paket ([:pick \$remaining3 0 ([:find \$remaining3 \"|\"])]);\
+    \r\
+    \n    :local status ([:pick \$remaining3 ([:find \$remaining3 \"|\"] + 1) \
+    [:len \$remaining3]]);\r\
     \n\r\
     \n    :local templatetagihan \"\$header\\\\n\\\\nHalo *\$name*,\\\\n\\\\nK\
     ami ingin mengingatkan Anda tentang tagihan berikut:\\\\n\\\\n-\\\\tNama: \
@@ -607,15 +636,24 @@ add dont-require-permissions=yes name=wa_template_tagihan_pppoe owner=Renaldi \
     \n    :set pesanoutboxuser \$templatetagihan;\r\
     \n    :set nomoruser \$number;\r\
     \n\r\
-    \n    :delay (\$delaypesan . \"s\");\r\
-    \n    \r\
-    \n    /system script run wa_fetch_pesan_user;\r\
+    \n    :if ( \$status = \"BELUM\") do={\r\
+    \n      :delay (\$delaypesan . \"s\");\r\
+    \n      \r\
+    \n      /system script run wa_fetch_pesan_user;\r\
     \n\r\
-    \n    :set pesanoutbox \"Pesan tagihan ke *\$name* sudah dikirimkan\"\r\
-    \n    /system script run wa_fetch_pesan\r\
+    \n      :set pesanoutbox \"Pesan tagihan ke *\$name* sudah dikirimkan\"\r\
+    \n      /system script run wa_fetch_pesan\r\
+    \n    } else={\r\
+    \n      :delay (\$delaypesan . \"s\");\r\
+    \n\r\
+    \n      :set pesanoutbox \"Pesan tagihan ke *\$name* tidak dikirimkan kare\
+    na status sudah *\$status*\";\r\
+    \n      /system script run wa_fetch_pesan\r\
+    \n    }\r\
     \n  }\r\
     \n}\r\
-    \n"
+    \n\r\
+    \n:log warning \"Wa_Kirim_Tagihan_Berhenti\";"
 add dont-require-permissions=yes name=wa_template_pengingat_pppoe owner=\
     Renaldi policy=read,write,policy,test,sensitive source=":log warning \"Wa_\
     Kirim_Pengingat_Tagihan_Berjalan\";\r\
@@ -631,7 +669,7 @@ add dont-require-permissions=yes name=wa_template_pengingat_pppoe owner=\
     \n:global tnggaltagihan;\r\
     \n:local tanggal \$tnggaltagihan;\r\
     \n\r\
-    \n:foreach pppSecretId in=[/ppp secret find profile=\"PPPoE\"] do={\r\
+    \n:foreach pppSecretId in=[/ppp secret find service=\"pppoe\"] do={\r\
     \n  :local comment [/ppp secret get \$pppSecretId comment];\r\
     \n  :if ([:len \$comment] > 0) do={\r\
     \n    :local delimiter ([:find \$comment \"|\"]);\r\
@@ -686,76 +724,47 @@ add dont-require-permissions=yes name=wa_getnumber&name&tagihan owner=Renaldi \
     \n:put \$comments\r\
     \n"
 add dont-require-permissions=yes name=test owner=Renaldi policy=\
-    read,write,policy,test,sensitive source=":global pesanoutbox;\r\
-    \n:global header;\r\
-    \n:global footer;\r\
+    read,write,policy,test,sensitive source=":local hariini [/system clock get\
+    \_date];\r\
+    \n:local timeini [/system clock get time];\r\
     \n\r\
-    \n:local nama \$user;\r\
-    \n:local ip \$address;\r\
-    \n:local prf \$profile;\r\
-    \n:local mac \$\"mac-address\";\r\
-    \n:local tanggal [/system clock get date];\r\
-    \n:local waktu [/system clock get time];\r\
-    \n:local stringtanggal \"\$tanggal / \$waktu\"\r\
-    \n:local useraktif [/ip hotspot active print count-only];\r\
-    \n:local lby [/ip hotspot active get [find user=\"\$nama\"] login-by];\r\
-    \n:local host [/ip dhcp-server lease get [find address=\"\$ip\"] host-name\
-    ];\r\
+    \n:local timestamp (\"\$hariini / \$timeini\");\r\
+    \n:put \$timestamp;\r\
+    \n\r\
+    \n:global tnggaltagihan;\r\
+    \n:global tnggalpengingat;\r\
+    \n:global pesanoutbox;\r\
     \n\r\
     \n\r\
-    \n:local namaprf [:pick \$prf 0 [:find \$prf \"|\"]];\r\
-    \n:local timeprf [:pick \$prf ([:find \$prf \"|\"] + 1) [:len \$prf]];\r\
-    \n\r\
-    \n:local namasch \"User \$nama | HAPUS USER HOTSPOT\";\r\
-    \n\r\
-    \n:log warning \$pesanoutbox;\r\
-    \n:log warning \$header;\r\
-    \n:log warning \$footer;\r\
-    \n\r\
-    \n:log warning \$nama;\r\
-    \n:log warning \$ip;\r\
-    \n:log warning \$prf;\r\
-    \n:log warning \$mac;\r\
-    \n:log warning \$tanggal;\r\
-    \n:log warning \$waktu;\r\
-    \n:log warning \$stringtanggal;\r\
-    \n:log warning \$useraktif;\r\
-    \n:log warning \$lby;\r\
-    \n:log warning \$host;\r\
-    \n:log warning \$namaprf;\r\
-    \n:log warning \$timeprf;\r\
-    \n:log warning \$namasch;\r\
-    \n\r\
-    \n/ip hotspot user set [find name=\$nama] comment=\"BERHASIL LOGIN\"\r\
-    \n\r\
-    \n\r\
-    \n:if ([/ip hotspot user get [find name=\$nama] comment]=\"BERHASIL LOGIN\
-    \") do={\r\
-    \n  /ip hotspot user set [find name=\$nama] comment=\"Login : \$stringtang\
-    gal\";\r\
-    \n  /ip hotspot user set \$nama mac=\$mac;\r\
-    \n  :log info \"User \$nama sudah berhasil login dan sudah di bindingkan d\
-    engan mac \$mac\";\r\
-    \n\r\
-    \n  :local emot \"{centang}\";\r\
-    \n  :set pesanoutbox \"\$header\\\\n\\\\n\$emot \$nama berhasil login hots\
-    pot\\\\nWaktu Login\\\\t: \$stringtanggal\\\\nIP Address\\\\t: \$ip\\\\nPr\
-    ofile\\\\t: \$prf\\\\n\\\\nTotal User Hotspot Active : \$useraktif\\\\n\\\
-    \\n\$footer\";\r\
-    \n  /system script run wa_fetch_pesan\r\
+    \n:if (\$hariini~\"/\$tnggaltagihan/\") do={\r\
+    \n  :log warning \"Data tanggal sekarang \$hariini sama dengan data tangga\
+    l tagihan \$tnggaltagihan. Memproses pengiriman tagihan.\";\r\
+    \n  :set pesanoutbox \"Waktu Sekarang \$timestamp\\\\n\\\\nTanggal sesuai \
+    dengan ketentuan tanggal tagihan yaitu \$tnggaltagihan. Memproses pengirim\
+    an tagihan.\";\r\
+    \n  /system script run wa_fetch_pesan;\r\
+    \n  /system script run wa_template_tagihan_pppoe;\r\
+    \n  :set pesanoutbox \"Tagihan sudah dikirimkan\";\r\
+    \n  /system script run wa_fetch_pesan;\r\
     \n} else={\r\
-    \n  :log warning \"User \$nama berhasil melakukan login ulang.\";\r\
-    \n}\r\
+    \n  :set \$hariini \"Bukan Tanggal \$tnggaltagihan\";\r\
+    \n  :put \$hariini;\r\
     \n\r\
-    \n:if (:len [/system scheduler find name=\$namasch] = 0) do={\r\
-    \n  /system scheduler add name=\$namasch start-date=\$tanggal start-time=\
-    \$waktu interval=\$timeprf on-event=\":global pesanoutbox;\\r\\n/ip hotspo\
-    t active remove [find user=\$nama]\\r\\n/ip hotspot user remove [find name\
-    =\$nama]\\r\\n:if ([:len [/ip hotspot user find name=\$nama]] = 0 && [:len\
-    \_[/ip hotspot active find user=\$nama]] = 0) do={\\r\\n  /system schedule\
-    r remove [find name=\$namasch]\\r\\n  :set pesanoutbox \\\"User \$nama dan\
-    \_scheduler \$namasch\\\\n{centang} Berhasil Dihapus\\\";\\r\\n  /system s\
-    cript run wa_fetch_pesan;\\r\\n}\\r\\n\";\r\
+    \n  :if (\$hariini~\"/\$tnggalpengingat/\") do={\r\
+    \n    :log warning \"Data tanggal sekarang \$hariini sama dengan data tang\
+    gal penggingat tagihan \$tnggalpengingat. Memproses pengiriman penggingat \
+    tagihan.\";\r\
+    \n    :set pesanoutbox \"Waktu Sekarang \$timestamp\\\\n\\\\nTanggal sesua\
+    i dengan ketentuan tanggal pengingat tagihan yaitu \$tnggalpengingat. Memp\
+    roses pengiriman penginggat tagihan.\";\r\
+    \n    /system script run wa_fetch_pesan;\r\
+    \n    /system script run wa_template_penginggat_pppoe;\r\
+    \n    :set pesanoutbox \"Pengingat tagihan sudah dikirimkan\";\r\
+    \n    /system script run wa_fetch_pesan;\r\
+    \n  } else={\r\
+    \n    :set \$hariini \"Bukan Tanggal \$tnggalpengingat\";\r\
+    \n    :put \$hariini;\r\
+    \n  };\r\
     \n};"
 add dont-require-permissions=yes name=wa_userhotspot owner=Renaldi policy=\
     read,write,policy,test,sensitive source=":log warning \"Wa_Ac_User_Hotspot\
@@ -957,7 +966,7 @@ add dont-require-permissions=yes name=wa_template_broadcast_pppoe owner=\
     \n:global pesanoutboxuser;\r\
     \n:global pesanoutbox;\r\
     \n\r\
-    \n:foreach pppSecretId in=[/ppp secret find profile=\"PPPoE\"] do={\r\
+    \n:foreach pppSecretId in=[/ppp secret find service=\"pppoe\"] do={\r\
     \n  :local comment [/ppp secret get \$pppSecretId comment];\r\
     \n  :if ([:len \$comment] > 0) do={\r\
     \n    :local delimiter ([:find \$comment \"|\"]);\r\
@@ -1010,8 +1019,8 @@ add dont-require-permissions=yes name=wa_template_broadcast_pppoe owner=\
     atas dukungan Anda.\\\\n\\\\nSalam,\\\\n\$infoadmin\\\\n\\\\n\$footer\";\r\
     \n        } else={\r\
     \n          :if (\$infobroadcast = \"TEKS\") do={\r\
-    \n            :set template \"\$header\\\\n\\\\n\$teksbroadcast\\\\n\\\\n\
-    \$footer\";\r\
+    \n            :set template \"\$header\\\\n\\\\n\$teksbroadcast\\\\n\$info\
+    admin\\\\n\\\\n\$footer\";\r\
     \n          }\r\
     \n        }\r\
     \n      }\r\
@@ -1100,6 +1109,11 @@ add dont-require-permissions=yes name=wa_isolir owner=Renaldi policy=\
     \n:global pesanblokir;\r\
     \n:global domain;\r\
     \n:global urlapi;\r\
+    \n:global domainisolir;\r\
+    \n:global domainisolirhttp;\r\
+    \n:global pengecualianhost;\r\
+    \n\r\
+    \n\r\
     \n:set pesanblokir \$pesanisolir;\r\
     \n\r\
     \n:local endurl \"\$urlapi/error5\";\r\
@@ -1108,21 +1122,22 @@ add dont-require-permissions=yes name=wa_isolir owner=Renaldi policy=\
     \n:local type \".html file\";\r\
     \n:local commentnat \"ISOLIR-INET\";\r\
     \n:local portproxy;\r\
+    \n:local package [/system package get routeros version];\r\
     \n\r\
     \n:if ([:len [file find type=\"disk\" name=\"flash\"]]=1) do={\r\
     \n    :put \"Ada Disk 'flash'\";\r\
     \n    :set filename \"flash/webproxy/error.html\";\r\
     \n    :if ([ip proxy get enabled]=false) do={\r\
     \n        /ip proxy set enabled=yes\r\
-    \n        :set portproxy [/ip proxy get port]\r\
     \n    }\r\
+    \n    :set portproxy [/ip proxy get port];\r\
     \n#    /tool fetch url=\$endurl  mode=http dst-path=\$filename\r\
     \n} else={\r\
     \n    :set filename \"webproxy/error.html\";\r\
     \n    :if ([ip proxy get enabled]=false) do={\r\
     \n        /ip proxy set enabled=yes\r\
-    \n        :set portproxy [/ip proxy get port]\r\
     \n    }\r\
+    \n    :set portproxy [/ip proxy get port];\r\
     \n#    /tool fetch url=\$endurl  mode=http dst-path=\$filename\r\
     \n}\r\
     \n\r\
@@ -1135,10 +1150,12 @@ add dont-require-permissions=yes name=wa_isolir owner=Renaldi policy=\
     \n#     /ip proxy set enabled=yes\r\
     \n# }\r\
     \n\r\
+    \n:put \$portproxy\r\
+    \n\r\
     \n:if ([:len [/ip firewall nat find comment=\"ISOLIR-INET\"]]=0) do={\r\
     \n    /ip firewall nat add chain=dstnat action=redirect to-ports=\$portpro\
-    xy src-address-list=BLOKIR-INET protocol=tcp dst-port=80,443 comment=\$com\
-    mentnat\r\
+    xy  src-address-list=BLOKIR-INET protocol=tcp dst-port=80,443 comment=\$co\
+    mmentnat\r\
     \n}\r\
     \n\r\
     \n:local pemisah1 [:pick \$pesanisolir ([:find \$pesanisolir \"|\"] + 1) [\
@@ -1149,38 +1166,241 @@ add dont-require-permissions=yes name=wa_isolir owner=Renaldi policy=\
     \n:put \$fungsi;\r\
     \n:put \$iptarget;\r\
     \n\r\
-    \n:if (\$fungsi = \"tambah\") do={\r\
-    \n    :local checkExists [ /ip proxy access find src-address=\$iptarget ];\
-    \r\
-    \n    /system script run wa_blokir_inet\r\
-    \n\r\
-    \n    :if ( [:len \$checkExists] = 0 ) do={\r\
-    \n        :local commentlist \"\$stringwaktu\";\r\
-    \n        :put \$commentlist\r\
-    \n        :local command \"/ip proxy access add src-address=\$iptarget dst\
-    -host=!\$domain action=redirect action-data=\$endurldata comment=\$comment\
-    list\";\r\
-    \n        :execute \$command;\r\
-    \n        :set pesanoutbox \"IP *\$iptarget* Berhasil di tambahkan ke acce\
-    ss web proxy *'\$commentnat'*.\";\r\
-    \n    } else={\r\
-    \n        :set pesanoutbox \"IP *\$iptarget* sudah ada dalam access web pr\
-    oxy *'\$commentnat'*.\";\r\
-    \n    }\r\
-    \n} else={\r\
-    \n    :if (\$fungsi = \"hapus\") do={\r\
+    \nif (\$package~\"^7.\") do={\r\
+    \n    :if (\$fungsi = \"tambah\") do={\r\
     \n        :local checkExists [ /ip proxy access find src-address=\$iptarge\
-    t];\r\
+    t ];\r\
     \n        /system script run wa_blokir_inet\r\
     \n\r\
-    \n        :if ( [:len \$checkExists] = 1 ) do={\r\
-    \n            /ip proxy access remove [find src-address=\$iptarget];\r\
-    \n            :set pesanoutbox \"IP *\$iptarget* Berhasil di hapus dari ac\
-    cess web proxy *'\$commentnat'*.\";\r\
+    \n        :if ( [:len \$checkExists] = 0 ) do={\r\
+    \n            :local commentlist \"\$stringwaktu\";\r\
+    \n            :put \$commentlist\r\
+    \n            :local command \"/ip proxy access add src-address=\$iptarget\
+    \_dst-host=!\$pengecualianhost action=redirect action-data=\$domainisolir \
+    comment=\$commentlist\";\r\
+    \n            :execute \$command;\r\
+    \n            :set pesanoutbox \"IP *\$iptarget* Berhasil di tambahkan ke \
+    access web proxy *'\$commentnat'*.\";\r\
     \n        } else={\r\
-    \n            :set pesanoutbox \"IP *\$iptarget* tidak ada dalam access we\
+    \n            :set pesanoutbox \"IP *\$iptarget* sudah ada dalam access we\
     b proxy *'\$commentnat'*.\";\r\
+    \n        }\r\
+    \n    } else={\r\
+    \n        :if (\$fungsi = \"hapus\") do={\r\
+    \n            :local checkExists [ /ip proxy access find src-address=\$ipt\
+    arget];\r\
+    \n            /system script run wa_blokir_inet\r\
+    \n\r\
+    \n            :if ( [:len \$checkExists] = 1 ) do={\r\
+    \n                /ip proxy access remove [find src-address=\$iptarget];\r\
+    \n                :set pesanoutbox \"IP *\$iptarget* Berhasil di hapus dar\
+    i access web proxy *'\$commentnat'*.\";\r\
+    \n            } else={\r\
+    \n                :set pesanoutbox \"IP *\$iptarget* tidak ada dalam acces\
+    s web proxy *'\$commentnat'*.\";\r\
+    \n            }\r\
+    \n        }\r\
+    \n    }\r\
+    \n} else={\r\
+    \n    :if (\$fungsi = \"tambah\") do={\r\
+    \n        :local checkExists [ /ip proxy access find src-address=\$iptarge\
+    t ];\r\
+    \n        /system script run wa_blokir_inet\r\
+    \n\r\
+    \n        :if ( [:len \$checkExists] = 0 ) do={\r\
+    \n            :local commentlist \"\$stringwaktu\";\r\
+    \n            :put \$commentlist\r\
+    \n            :local command \"/ip proxy access add src-address=\$iptarget\
+    \_dst-host=!\$pengecualianhost action=deny action-data=\$domainisolirhttp \
+    comment=\$commentlist\";\r\
+    \n            :execute \$command;\r\
+    \n            :set pesanoutbox \"IP *\$iptarget* Berhasil di tambahkan ke \
+    access web proxy *'\$commentnat'*.\";\r\
+    \n        } else={\r\
+    \n            :set pesanoutbox \"IP *\$iptarget* sudah ada dalam access we\
+    b proxy *'\$commentnat'*.\";\r\
+    \n        }\r\
+    \n    } else={\r\
+    \n        :if (\$fungsi = \"hapus\") do={\r\
+    \n            :local checkExists [ /ip proxy access find src-address=\$ipt\
+    arget];\r\
+    \n            /system script run wa_blokir_inet\r\
+    \n\r\
+    \n            :if ( [:len \$checkExists] = 1 ) do={\r\
+    \n                /ip proxy access remove [find src-address=\$iptarget];\r\
+    \n                :set pesanoutbox \"IP *\$iptarget* Berhasil di hapus dar\
+    i access web proxy *'\$commentnat'*.\";\r\
+    \n            } else={\r\
+    \n                :set pesanoutbox \"IP *\$iptarget* tidak ada dalam acces\
+    s web proxy *'\$commentnat'*.\";\r\
+    \n            }\r\
     \n        }\r\
     \n    }\r\
     \n}\r\
+    \n\r\
     \n/system script run wa_fetch_pesan;"
+add dont-require-permissions=yes name=test2 owner=Renaldi policy=\
+    read,write,policy,test,sensitive source=":local hariini [/system clock get\
+    \_date];\r\
+    \n:local timeini [/system clock get time];\r\
+    \n\r\
+    \n:local timestamp (\"\$hariini / \$timeini\");\r\
+    \n:put \"Waktu Sekarang \$timestamp\";\r\
+    \n\r\
+    \n:global header;\r\
+    \n:global footer;\r\
+    \n:global infoadmin;\r\
+    \n:global pesanisolir;\r\
+    \n:global tnggalisolir;\r\
+    \n:global tnggaltagihan;\r\
+    \n:global tnggalpengingat;\r\
+    \n:global pesanoutbox;\r\
+    \n:global nomoruser;\r\
+    \n:global pesanoutboxuser;\r\
+    \n\r\
+    \n:local listbelum \"List Pengguna PPPoE Belum Bayar & Terisolir\\\\n:\\\\\
+    n\";\r\
+    \n:local listsudah \"List Pengguna PPPoE Sudah Bayar\\\\n:\\\\n\";\r\
+    \n\r\
+    \n\r\
+    \n:if (\$hariini~\"/\$tnggaltagihan/\") do={\r\
+    \n  :log warning \"Data tanggal sekarang \$hariini sama dengan data tangga\
+    l tagihan \$tnggaltagihan. Memproses pengiriman tagihan.\";\r\
+    \n  :set pesanoutbox \"Waktu Sekarang \$timestamp\\\\n\\\\nTanggal sesuai \
+    dengan ketentuan tanggal tagihan yaitu \$tnggaltagihan. Memproses pengirim\
+    an tagihan.\";\r\
+    \n  /system script run wa_fetch_pesan;\r\
+    \n  /system script run wa_template_tagihan_pppoe;\r\
+    \n  :set pesanoutbox \"Tagihan sudah dikirimkan\";\r\
+    \n  /system script run wa_fetch_pesan;\r\
+    \n  :log warning \"Pengiriman tagihan selesai\";\r\
+    \n} else={\r\
+    \n  :set \$hariini \"Bukan Tanggal \$tnggaltagihan\";\r\
+    \n  :put \$hariini;\r\
+    \n\r\
+    \n  :if (\$hariini~\"/\$tnggalpengingat/\") do={\r\
+    \n    :log warning \"Data tanggal sekarang \$hariini sama dengan data tang\
+    gal penggingat tagihan \$tnggalpengingat. Memproses pengiriman penggingat \
+    tagihan.\";\r\
+    \n    :set pesanoutbox \"Waktu Sekarang \$timestamp\\\\n\\\\nTanggal sesua\
+    i dengan ketentuan tanggal pengingat tagihan yaitu \$tnggalpengingat. Memp\
+    roses pengiriman penginggat tagihan.\";\r\
+    \n    /system script run wa_fetch_pesan;\r\
+    \n    /system script run wa_template_penginggat_pppoe;\r\
+    \n    :set pesanoutbox \"Pengingat tagihan sudah dikirimkan\";\r\
+    \n    /system script run wa_fetch_pesan;\r\
+    \n    :log warning \"Pengiriman pengingat tagihan selesai\";\r\
+    \n  } else={\r\
+    \n    :set \$hariini \"Bukan Tanggal \$tnggalpengingat\";\r\
+    \n    :put \$hariini;\r\
+    \n\r\
+    \n    :if (\$hariini~\"/\$tnggalisolir/\") do={\r\
+    \n        :log warning \"Data tanggal sekarang \$hariini sama dengan data \
+    tanggal isolir pelanggan \$tnggalisolir. Memproses isolir pelanggan dimula\
+    i.\";\r\
+    \n        :foreach pppSecretId in=[/ppp secret find profile=\"PPPoE\"] do=\
+    {\r\
+    \n            :local comment [/ppp secret get \$pppSecretId comment];\r\
+    \n            :if ([:len \$comment] > 0) do={\r\
+    \n                :local delimiter ([:find \$comment \"|\"]);\r\
+    \n                :local number [:pick \$comment 0 \$delimiter];\r\
+    \n                :local remaining [:pick \$comment (\$delimiter + 1) [:le\
+    n \$comment]];\r\
+    \n                :local name ([:pick \$remaining 0 ([:find \$remaining \"\
+    |\"])]);\r\
+    \n                \r\
+    \n                :local remaining2 [:pick \$remaining ([:find \$remaining\
+    \_\"|\"] + 1) [:len \$remaining]];\r\
+    \n                :local tagihan ([:pick \$remaining2 0 ([:find \$remainin\
+    g2 \"|\"])]);\r\
+    \n                :local remaining3 ([:pick \$remaining2 ([:find \$remaini\
+    ng2 \"|\"] + 1) [:len \$remaining2]]);\r\
+    \n                :local paket ([:pick \$remaining3 0 ([:find \$remaining3\
+    \_\"|\"])]);\r\
+    \n                :local status ([:pick \$remaining3 ([:find \$remaining3 \
+    \"|\"] + 1) [:len \$remaining3]]);\r\
+    \n\r\
+    \n                :if ( \$status = \"BELUM\") do={\r\
+    \n                    :set pesanoutboxuser \"\$header\\\\n\\\\nPelanggan *\
+    \$name*\\\\n\\\\nInternet Telah Dimatikan, dikarenakan belum melakukan pem\
+    bayaran. Jika sudah melakukan pembayaran silakan hubungi nomor admin terte\
+    ra di bawah.\\\\n\\\\n\$infoadmin\\\\n\\\\n\$footer\";\r\
+    \n                    :set nomoruser \$number;\r\
+    \n                    /system script run wa_fetch_pesan_user;\r\
+    \n                    :delay 4s;\r\
+    \n                    :set listbelum (\$listbelum + \"*\" + \$name + \"*, \
+    \");\r\
+    \n                    :local addresspppoe [ppp secret get dito remote-addr\
+    ess];\r\
+    \n                    :log warning \"Pelanggan \$name IP \$addresspppoe di\
+    \_ISOLIR karena belum melakukan pembayaran\";\r\
+    \n                    :set pesanisolir \".isolir|tambah|\$addresspppoe\";\
+    \r\
+    \n                    /system script run wa_isolir\r\
+    \n                } else={\r\
+    \n                    :set listsudah (\$listsudah + \"*\" + \$name + \"*, \
+    \");\r\
+    \n                }\r\
+    \n            }\r\
+    \n        }\r\
+    \n        :set pesanoutbox \"Berikut Data PPPoE\\\\n\\\\n\\\\n\$listbelum\
+    \\\\n\\\\n\$listsudah\";\r\
+    \n        /system script run wa_fetch_pesan\r\
+    \n        :log warning \"Proses isolir pelanggan berhenti\";\r\
+    \n    } else={\r\
+    \n        :set \$hariini \"Bukan Tanggal \$tnggalisolir\";\r\
+    \n        :put \$hariini;\r\
+    \n    }\r\
+    \n  };\r\
+    \n};"
+add dont-require-permissions=yes name=wa_update_tagihan owner=Renaldi policy=\
+    read,write,policy,test,sensitive source=":log warning \"Wa_Update_Tagihan_\
+    Berjalan\";\r\
+    \n\r\
+    \n:global pesanoutbox;\r\
+    \n:global pesanupdatetagihan;\r\
+    \n\r\
+    \n:local 1delimiter ([:find \$pesanupdatetagihan \"|\"]);\r\
+    \n:local katakunci [:pick \$pesanupdatetagihan 0 \$1delimiter];\r\
+    \n:local 1remaining [:pick \$pesanupdatetagihan (\$1delimiter + 1) [:len \
+    \$pesanupdatetagihan]];\r\
+    \n:local namabaru ([:pick \$1remaining 0 ([:find \$1remaining \"|\"])]);\r\
+    \n:local statusbaru [:pick \$1remaining ([:find \$1remaining \"|\"] + 1) [\
+    :len \$1remaining]];\r\
+    \n\r\
+    \n:local commentbaru;\r\
+    \n\r\
+    \n:local comment [/ppp secret get \$namabaru comment];\r\
+    \n:if ([:len \$comment] > 0) do={\r\
+    \n    :local delimiter ([:find \$comment \"|\"]);\r\
+    \n    :local number [:pick \$comment 0 \$delimiter];\r\
+    \n    :local remaining [:pick \$comment (\$delimiter + 1) [:len \$comment]\
+    ];\r\
+    \n    :local name ([:pick \$remaining 0 ([:find \$remaining \"|\"])]);\r\
+    \n\r\
+    \n    :local remaining2 [:pick \$remaining ([:find \$remaining \"|\"] + 1)\
+    \_[:len \$remaining]];\r\
+    \n    :local tagihan ([:pick \$remaining2 0 ([:find \$remaining2 \"|\"])])\
+    ;\r\
+    \n    :local remaining3 ([:pick \$remaining2 ([:find \$remaining2 \"|\"] +\
+    \_1) [:len \$remaining2]]);\r\
+    \n    :local paket ([:pick \$remaining3 0 ([:find \$remaining3 \"|\"])]);\
+    \r\
+    \n    :local status ([:pick \$remaining3 ([:find \$remaining3 \"|\"] + 1) \
+    [:len \$remaining3]]);\r\
+    \n\r\
+    \n    :if (\$statusbaru = \$status) do={\r\
+    \n        :set pesanoutbox \"Tidak ada perubahan status tagihan \$namabaru\
+    , karena status tagihan lama dengan baru sama.\"\r\
+    \n        /system script run wa_fetch_pesan\r\
+    \n    } else={\r\
+    \n        :set commentbaru \"\$number|\$name|\$tagihan|\$paket|\$statusbar\
+    u\";\r\
+    \n        /ppp secret set \$namabaru comment=\$commentbaru\r\
+    \n        :set pesanoutbox \"Perbaruan status tagihan \$namabaru berhasil.\
+    \"\r\
+    \n        /system script run wa_fetch_pesan\r\
+    \n    }\r\
+    \n}\r\
+    \n\r\
+    \n:log warning \"Wa_Update_Tagihan_Berhenti\";"
